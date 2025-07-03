@@ -1,0 +1,165 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Vídeos Sequenciais Automáticos</title>
+   <!-- Incluindo Tailwind CSS para estilização responsiva e moderna -->
+   <script src="https://cdn.tailwindcss.com"></script>
+   <style>
+       /* Estilos personalizados para a fonte e centralização */
+       body {
+           font-family: 'Inter', sans-serif;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           min-height: 100vh;
+           background-color: #1a202c; /* Fundo escuro para contraste */
+           margin: 0;
+           padding: 20px;
+           box-sizing: border-box;
+           overflow: hidden; /* Evita barras de rolagem */
+       }
+       .video-player-container {
+           position: relative;
+           width: 100%;
+           max-width: 1280px; /* Largura máxima para o player */
+           height: 0;
+           padding-bottom: 56.25%; /* Proporção 16:9 (altura é 56.25% da largura) */
+           background-color: #000;
+           border-radius: 1.5rem; /* Cantos arredondados */
+           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); /* Sombra mais pronunciada */
+           overflow: hidden; /* Garante que o vídeo não saia dos limites arredondados */
+       }
+       video {
+           position: absolute;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           object-fit: contain; /* Garante que o vídeo seja exibido completamente, sem cortes */
+           display: none; /* Esconde todos os vídeos por padrão, o JS irá mostrar o ativo */
+       }
+       video.active {
+           display: block; /* Mostra apenas o vídeo ativo */
+       }
+       h1 {
+           color: #e2e8f0; /* Cor de texto claro para o título */
+           margin-bottom: 1.5rem;
+           font-size: 2.5rem; /* Título maior */
+           font-weight: 800; /* Extra negrito */
+           text-align: center;
+           position: absolute; /* Posiciona o título sobre o player */
+           top: 20px;
+           width: 100%;
+           z-index: 10; /* Garante que o título fique acima do vídeo */
+           text-shadow: 2px 2px 4px rgba(0,0,0,0.7); /* Sombra no texto para legibilidade */
+       }
+       .loading-message {
+           position: absolute;
+           top: 50%;
+           left: 50%;
+           transform: translate(-50%, -50%);
+           color: #cbd5e0;
+           font-size: 1.5rem;
+           font-weight: 600;
+       }
+   </style>
+</head>
+<body>
+   <div class="video-player-container">
+       <!-- Título que pode ser visível ou não, dependendo do design -->
+       <h1 class="hidden sm:block">Sua Playlist de Vídeos</h1>
+
+       <!-- Mensagem de carregamento -->
+       <div id="loadingMessage" class="loading-message">Carregando vídeos...</div>
+
+       <!--
+           IMPORTANTE:
+           1. Substitua 'video1.mp4', 'video2.mp4', etc., pelos nomes dos seus arquivos de vídeo.
+           2. Coloque TODOS os seus arquivos de vídeo na MESMA PASTA que este arquivo index.html.
+           3. Adicione quantos vídeos você quiser, seguindo o mesmo padrão de tag <video>.
+           4. Os atributos 'autoplay', 'muted' e 'playsinline' são CRUCIAIS para que o vídeo comece automaticamente
+              e sem interação do usuário, especialmente em dispositivos móveis.
+           5. 'preload="auto"' ajuda a carregar o próximo vídeo mais rápido.
+           6. 'id' é necessário para o JavaScript identificar os vídeos.
+       -->
+       <video id="video1" src="video1.mp4" class="active" autoplay muted playsinline preload="auto"></video>
+       <video id="video2" src="video2.mp4" autoplay muted playsinline preload="auto"></video>
+       <video id="video3" src="video3.mp4" autoplay muted playsinline preload="auto"></video>
+       <!-- Adicione mais vídeos aqui se necessário -->
+       <!-- <video id="video4" src="video4.mp4" autoplay muted playsinline preload="auto"></video> -->
+
+   </div>
+
+   <script>
+       document.addEventListener('DOMContentLoaded', () => {
+           const videoElements = document.querySelectorAll('.video-player-container video');
+           const loadingMessage = document.getElementById('loadingMessage');
+           let currentVideoIndex = 0;
+
+           // Função para iniciar a reprodução do vídeo atual
+           const playCurrentVideo = () => {
+               if (videoElements.length === 0) {
+                   console.error("Nenhum vídeo encontrado para reproduzir.");
+                   loadingMessage.textContent = "Nenhum vídeo encontrado.";
+                   return;
+               }
+
+               // Esconde a mensagem de carregamento quando o primeiro vídeo começa a tocar
+               if (loadingMessage) {
+                   loadingMessage.style.display = 'none';
+               }
+
+               // Pausa todos os vídeos e remove a classe 'active'
+               videoElements.forEach((video, index) => {
+                   video.pause();
+                   video.classList.remove('active');
+               });
+
+               // Toca o vídeo atual e adiciona a classe 'active'
+               const currentVideo = videoElements[currentVideoIndex];
+               currentVideo.classList.add('active');
+
+               // Tenta dar play no vídeo. O .catch é importante para lidar com bloqueios de autoplay
+               currentVideo.play().catch(error => {
+                   console.warn("Autoplay foi bloqueado ou houve um erro ao tentar reproduzir:", error);
+                   // Se o autoplay for bloqueado, ainda tentamos avançar para o próximo vídeo
+                   // para não travar a sequência. Em alguns navegadores, um clique inicial do usuário
+                   // pode ser necessário para iniciar o autoplay.
+                   // Para garantir a reprodução automática, 'muted' é crucial.
+                   playNextVideo(); // Tenta o próximo se este falhar
+               });
+           };
+
+           // Função para ir para o próximo vídeo na sequência
+           const playNextVideo = () => {
+               currentVideoIndex++;
+               if (currentVideoIndex >= videoElements.length) {
+                   currentVideoIndex = 0; // Volta para o primeiro vídeo para loop infinito
+               }
+               playCurrentVideo();
+           };
+
+           // Adiciona um listener para o evento 'ended' (fim) de cada vídeo
+           videoElements.forEach((video, index) => {
+               video.addEventListener('ended', playNextVideo);
+               // Opcional: Adicionar listener para o evento 'canplaythrough' para garantir que o vídeo está pronto
+               // video.addEventListener('canplaythrough', () => {
+               //     console.log(`Vídeo ${video.id} pode ser reproduzido completamente.`);
+               // });
+               // Adicionar listener para 'error' para depuração
+               video.addEventListener('error', (e) => {
+                   console.error(`Erro ao carregar vídeo ${video.id}:`, e);
+                   // Tenta pular para o próximo vídeo se houver um erro
+                   playNextVideo();
+               });
+           });
+
+           // Inicia a reprodução do primeiro vídeo assim que a página é carregada
+           playCurrentVideo();
+       });
+   </script>
+</body>
+</html>
