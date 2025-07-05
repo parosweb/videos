@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -12,6 +11,7 @@
        body {
            font-family: 'Inter', sans-serif;
            display: flex;
+           flex-direction: column; /* Altera para coluna para acomodar o título acima */
            justify-content: center;
            align-items: center;
            min-height: 100vh;
@@ -50,9 +50,6 @@
            font-size: 2.5rem; /* Título maior */
            font-weight: 800; /* Extra negrito */
            text-align: center;
-           position: absolute; /* Posiciona o título sobre o player */
-           top: 20px;
-           width: 100%;
            z-index: 10; /* Garante que o título fique acima do vídeo */
            text-shadow: 2px 2px 4px rgba(0,0,0,0.7); /* Sombra no texto para legibilidade */
        }
@@ -64,14 +61,67 @@
            color: #cbd5e0;
            font-size: 1.5rem;
            font-weight: 600;
+           z-index: 5; /* Abaixo dos controles, mas acima do vídeo */
+       }
+       /* Estilos para os controles de play/pause */
+       .controls-overlay {
+           position: absolute;
+           inset: 0;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
+           transition: opacity 0.3s ease-in-out;
+           opacity: 0; /* Escondido por padrão */
+           pointer-events: none; /* Não interfere com cliques no vídeo quando escondido */
+           border-radius: 1.5rem; /* Mantém os cantos arredondados */
+       }
+       .controls-overlay.visible {
+           opacity: 1;
+           pointer-events: auto; /* Permite interação quando visível */
+       }
+       .play-pause-button {
+           background-color: #3b82f6; /* Azul vibrante */
+           color: white;
+           font-size: 3rem; /* Ícone maior */
+           padding: 1.5rem 2rem;
+           border-radius: 9999px; /* Botão circular */
+           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Sombra mais suave */
+           transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+           border: none;
+           cursor: pointer;
+       }
+       .play-pause-button:hover {
+           background-color: #2563eb; /* Azul mais escuro ao passar o mouse */
+           transform: scale(1.05); /* Pequeno zoom ao passar o mouse */
+       }
+       .play-pause-button:active {
+           transform: scale(0.98); /* Pequeno encolhimento ao clicar */
+       }
+       /* Mensagem de bloqueio de autoplay */
+       .autoplay-blocked-message {
+           position: absolute;
+           bottom: 1rem;
+           left: 50%;
+           transform: translateX(-50%);
+           background-color: #dc2626; /* Vermelho para alerta */
+           color: white;
+           text-align: center;
+           padding: 0.75rem 1.5rem;
+           border-radius: 0.75rem;
+           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+           font-size: 1rem;
+           font-weight: 500;
+           z-index: 10; /* Acima de tudo */
+           display: none; /* Escondido por padrão */
        }
    </style>
 </head>
 <body>
-   <div class="video-player-container">
-       <!-- Título que pode ser visível ou não, dependendo do design -->
-       <h1 class="hidden sm:block">Sua Playlist de Vídeos</h1>
+   <!-- Título que pode ser visível ou não, dependendo do design -->
+   <h1 class="hidden sm:block">Sua Playlist de Vídeos</h1>
 
+   <div class="video-player-container">
        <!-- Mensagem de carregamento -->
        <div id="loadingMessage" class="loading-message">Carregando vídeos...</div>
 
@@ -80,34 +130,70 @@
            1. Substitua 'video1.mp4', 'video2.mp4', etc., pelos nomes dos seus arquivos de vídeo.
            2. Coloque TODOS os seus arquivos de vídeo na MESMA PASTA que este arquivo index.html.
            3. Adicione quantos vídeos você quiser, seguindo o mesmo padrão de tag <video>.
-           4. Os atributos 'autoplay', 'muted' e 'playsinline' são CRUCIAIS para que o vídeo comece automaticamente
-              e sem interação do usuário, especialmente em dispositivos móveis.
+           4. O atributo 'playsinline' é CRUCIAL para que o vídeo funcione corretamente em dispositivos móveis.
            5. 'preload="auto"' ajuda a carregar o próximo vídeo mais rápido.
            6. 'id' é necessário para o JavaScript identificar os vídeos.
+           7. O atributo 'autoplay' está presente, mas a reprodução automática com som
+              pode ser bloqueada por navegadores. Se isso ocorrer, o botão de play aparecerá.
        -->
-       <video id="video1" src="the_winner_takes_it_all.mp4" class="active" autoplay muted playsinline preload="auto"></video>
-       <video id="video2" src="skyline_pigeon.mp4" autoplay muted playsinline preload="auto"></video>
-       <video id="video3" src="sacrifice.mp4" autoplay muted playsinline preload="auto"></video>
-       <video id="video4" src="rocket_man.mp4" autoplay muted playsinline preload="auto"></video>
-       <video id="video5" src="goodbye_yellow_brick_road.mp4" autoplay muted playsinline preload="auto"></video>
-       <video id="video6" src="dont_go_breaking_my_heart.mp4" autoplay muted playsinline preload="auto"></video>
-       <video id="video7" src="die_with_a_smile.mp4" autoplay muted playsinline preload="auto"></video>
-       <video id="video8" src="dancing_queen.mp4" autoplay muted playsinline preload="auto"></video>
-       <video id="video8" src="cold_heart.mp4" autoplay muted playsinline preload="auto"></video> 
-       <video id="video9" src="can_you_fell_the_love_tonight.mp4" autoplay muted playsinline preload="auto"></video> 
-       <video id="video10" src="bonjour.mp4" autoplay muted playsinline preload="auto"></video> 
-       <video id="video11" src="bohemian_rhapsody.mp4" autoplay muted playsinline preload="auto"></video> 
-       <video id="video12" src="blessed.mp4" autoplay muted playsinline preload="auto"></video> 
+       <video id="video1" src="the_winner_takes_it_all.mp4" class="active" autoplay playsinline preload="auto"></video>
+       <video id="video2" src="skyline_pigeon.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video3" src="sacrifice.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video4" src="rocket_man.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video5" src="goodbye_yellow_brick_road.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video6" src="dont_go_breaking_my_heart.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video7" src="die_with_a_smile.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video8" src="dancing_queen.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video9" src="cold_heart.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video10" src="can_you_fell_the_love_tonight.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video11" src="bonjour.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video12" src="bohemian_rhapsody.mp4" autoplay playsinline preload="auto"></video>
+       <video id="video13" src="blessed.mp4" autoplay playsinline preload="auto"></video>
        <!-- Adicione mais vídeos aqui se necessário -->
-       <!-- <video id="video4" src="video4.mp4" autoplay muted playsinline preload="auto"></video> -->
 
+       <!-- Controles de Play/Pause (inicialmente ocultos) -->
+       <div id="controlsOverlay" class="controls-overlay">
+           <button id="playPauseButton" class="play-pause-button">
+               ??
+           </button>
+       </div>
+
+       <!-- Mensagem de bloqueio de autoplay (inicialmente oculta) -->
+       <div id="autoplayBlockedMessage" class="autoplay-blocked-message">
+           <p>A reprodução automática foi bloqueada. Clique no ?? para iniciar.</p>
+       </div>
    </div>
 
    <script>
        document.addEventListener('DOMContentLoaded', () => {
            const videoElements = document.querySelectorAll('.video-player-container video');
            const loadingMessage = document.getElementById('loadingMessage');
+           const controlsOverlay = document.getElementById('controlsOverlay');
+           const playPauseButton = document.getElementById('playPauseButton');
+           const autoplayBlockedMessage = document.getElementById('autoplayBlockedMessage');
            let currentVideoIndex = 0;
+
+           // Função para mostrar os controles de play/pause e a mensagem de bloqueio
+           const showControls = () => {
+               controlsOverlay.classList.add('visible');
+               autoplayBlockedMessage.style.display = 'block';
+           };
+
+           // Função para esconder os controles de play/pause e a mensagem de bloqueio
+           const hideControls = () => {
+               controlsOverlay.classList.remove('visible');
+               autoplayBlockedMessage.style.display = 'none';
+           };
+
+           // Função para atualizar o ícone do botão de play/pause
+           const updatePlayPauseButtonIcon = () => {
+               const currentVideo = videoElements[currentVideoIndex];
+               if (currentVideo.paused) {
+                   playPauseButton.textContent = '??'; // Ícone de play
+               } else {
+                   playPauseButton.textContent = '??'; // Ícone de pause
+               }
+           };
 
            // Função para iniciar a reprodução do vídeo atual
            const playCurrentVideo = () => {
@@ -123,7 +209,7 @@
                }
 
                // Pausa todos os vídeos e remove a classe 'active'
-               videoElements.forEach((video, index) => {
+               videoElements.forEach((video) => {
                    video.pause();
                    video.classList.remove('active');
                });
@@ -133,13 +219,15 @@
                currentVideo.classList.add('active');
 
                // Tenta dar play no vídeo. O .catch é importante para lidar com bloqueios de autoplay
-               currentVideo.play().catch(error => {
+               currentVideo.play().then(() => {
+                   // Se a reprodução automática for bem-sucedida, esconde os controles
+                   hideControls();
+                   updatePlayPauseButtonIcon();
+               }).catch(error => {
                    console.warn("Autoplay foi bloqueado ou houve um erro ao tentar reproduzir:", error);
-                   // Se o autoplay for bloqueado, ainda tentamos avançar para o próximo vídeo
-                   // para não travar a sequência. Em alguns navegadores, um clique inicial do usuário
-                   // pode ser necessário para iniciar o autoplay.
-                   // Para garantir a reprodução automática, 'muted' é crucial.
-                   playNextVideo(); // Tenta o próximo se este falhar
+                   // Se o autoplay for bloqueado, mostra os controles e a mensagem
+                   showControls();
+                   updatePlayPauseButtonIcon(); // Garante que o ícone seja de play
                });
            };
 
@@ -153,18 +241,33 @@
            };
 
            // Adiciona um listener para o evento 'ended' (fim) de cada vídeo
-           videoElements.forEach((video, index) => {
+           videoElements.forEach((video) => {
                video.addEventListener('ended', playNextVideo);
-               // Opcional: Adicionar listener para o evento 'canplaythrough' para garantir que o vídeo está pronto
-               // video.addEventListener('canplaythrough', () => {
-               //     console.log(`Vídeo ${video.id} pode ser reproduzido completamente.`);
-               // });
                // Adicionar listener para 'error' para depuração
                video.addEventListener('error', (e) => {
                    console.error(`Erro ao carregar vídeo ${video.id}:`, e);
                    // Tenta pular para o próximo vídeo se houver um erro
                    playNextVideo();
                });
+               // Adiciona listeners para atualizar o botão quando o vídeo é pausado ou iniciado manualmente
+               video.addEventListener('play', () => {
+                   updatePlayPauseButtonIcon();
+                   hideControls(); // Esconde os controles quando o vídeo começa a tocar
+               });
+               video.addEventListener('pause', () => {
+                   updatePlayPauseButtonIcon();
+                   showControls(); // Mostra os controles quando o vídeo é pausado
+               });
+           });
+
+           // Listener para o botão de play/pause
+           playPauseButton.addEventListener('click', () => {
+               const currentVideo = videoElements[currentVideoIndex];
+               if (currentVideo.paused) {
+                   currentVideo.play();
+               } else {
+                   currentVideo.pause();
+               }
            });
 
            // Inicia a reprodução do primeiro vídeo assim que a página é carregada
@@ -173,3 +276,11 @@
    </script>
 </body>
 </html>
+
+
+
+// Inicia a reprodução do primeiro vídeo assim que a página é carregada
+
+playCurrentVideo();
+
+});
