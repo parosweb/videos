@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="pt-BR">
 <head>
    <meta charset="UTF-8">
@@ -135,6 +135,13 @@
            6. 'id' é necessário para o JavaScript identificar os vídeos.
            7. O atributo 'autoplay' está presente, mas a reprodução automática com som
               pode ser bloqueada por navegadores. Se isso ocorrer, o botão de play aparecerá.
+           8. SE O VÍDEO ESTIVER COM O FRAME TRAVADO MAS COM SOM, A CAUSA MAIS PROVÁVEL SÃO OS ARQUIVOS DE VÍDEO.
+              MESMO APÓS RECODIFICAÇÃO, PODE SER NECESSÁRIO OTIMIZAR AINDA MAIS:
+              - TENTE REDUZIR A RESOLUÇÃO (EX: 720P OU 480P PARA TESTE).
+              - TENTE REDUZIR O BITRATE DO VÍDEO (EX: 1500-3000 KBPS PARA 720P).
+              - NO HANDBRAKE, USE AS CONFIGURAÇÕES DE PERFIL 'MAIN' OU 'BASELINE' E NÍVEL '3.1' OU '4.0'.
+              - CERTIFIQUE-SE DE QUE A OPÇÃO 'WEB OPTIMIZED' (OU 'FAST START') ESTÁ ATIVADA.
+              - VERIFIQUE O CONSOLE DO NAVEGADOR (F12) PARA ERROS DE MÍDIA.
        -->
        <video id="video1" src="the_winner_takes_it_all.mp4" class="active" autoplay playsinline preload="auto"></video>
        <video id="video2" src="skyline_pigeon.mp4" autoplay playsinline preload="auto"></video>
@@ -276,11 +283,3 @@
    </script>
 </body>
 </html>
-
-
-
-// Inicia a reprodução do primeiro vídeo assim que a página é carregada
-
-playCurrentVideo();
-
-});
